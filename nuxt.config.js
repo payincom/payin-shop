@@ -1,4 +1,4 @@
-export default {
+const config = {
   loading: "~/components/loading.vue",
   router: {
     extendRoutes(routes) {
@@ -56,7 +56,7 @@ export default {
     "~/plugins/chartist.js",
     "~/plugins/vue-googlemap.js",
     "~/plugins/string-filter",
-    { src: '~/plugins/vue-stripe-checkout.js', ssr: false },
+    {src: '~/plugins/vue-stripe-checkout.js', ssr: false},
   ],
   /*
   ** Auto import components
@@ -113,34 +113,8 @@ export default {
     STRIPE_PK: 'pk_test_hG84qIUb4VFN5KlhKOSAqYET',
 
   },
-  serverMiddleware: [
+  serverMiddleware: [],
 
-    // Will register file from project api directory to handle /api/* requires
-    {path: '/api', handler: '~/api/index.js'},
-
-  ],
-  auth: {
-    strategies: {
-      local: {
-        endpoints: {
-          login: {url: '/api/sessions', method: 'post', propertyName: 'token'},
-          logout: {url: '/api/sessions', method: 'delete'},
-          user: {url: '/api/sessions/user', method: 'get', propertyName: 'data'}
-        },
-        // tokenRequired: true,
-        tokenType: ''
-      }
-    },
-    redirect: {
-      login: '/account/login',
-      logout: '/account/login',
-      callback: '/account/login',
-      home: '/'
-    },
-    resetOnError: true
-
-
-  },
   toast: {
     position: 'top-center',
     theme: "bubble",
@@ -158,3 +132,43 @@ export default {
     }
   }
 }
+
+//customization for different dev envs
+const fs = require('fs')
+const apiFilePath = '/api/index.js'
+
+let apiServer = 'https://app.payin.com'
+
+if (fs.existsSync('.' + apiFilePath)) {
+  //in api dev env
+  config.serverMiddleware.push(
+    // Will register file from project api directory to handle /api/* requires
+    {path: '/api', handler: '~' + apiFilePath}
+  )
+  apiServer = ''
+}
+
+config.auth = {
+  strategies: {
+    local: {
+      endpoints: {
+        login: {url: apiServer + '/api/sessions', method: 'post', propertyName: 'token'},
+        logout: {url: apiServer + '/api/sessions', method: 'delete'},
+        user: {url: apiServer + '/api/sessions/user', method: 'get', propertyName: 'data'}
+      },
+      // tokenRequired: true,
+      tokenType: ''
+    }
+  },
+  redirect: {
+    login: '/account/login',
+    logout: '/account/login',
+    callback: '/account/login',
+    home: '/'
+  },
+  resetOnError: true
+
+
+}
+
+export default config
